@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BF6EF1882E451325007F0318 /* CocoaMQTT in Frameworks */ = {isa = PBXBuildFile; productRef = BF6EF1872E451325007F0318 /* CocoaMQTT */; };
+		BF6EF18A2E451325007F0318 /* CocoaMQTTWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = BF6EF1892E451325007F0318 /* CocoaMQTTWebSocket */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BF6EF1512E44F116007F0318 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF6EF18A2E451325007F0318 /* CocoaMQTTWebSocket in Frameworks */,
+				BF6EF1882E451325007F0318 /* CocoaMQTT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = MQTTChat;
 			packageProductDependencies = (
+				BF6EF1872E451325007F0318 /* CocoaMQTT */,
+				BF6EF1892E451325007F0318 /* CocoaMQTTWebSocket */,
 			);
 			productName = MQTTChat;
 			productReference = BF6EF1432E44F114007F0318 /* MQTTChat.app */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = BF6EF13A2E44F114007F0318;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BF6EF1862E451325007F0318 /* XCRemoteSwiftPackageReference "CocoaMQTT" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF6EF1442E44F114007F0318 /* Products */;
 			projectDirPath = "";
@@ -395,6 +407,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BMZMVWGL7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -422,6 +435,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BMZMVWGL7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -550,6 +564,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BF6EF1862E451325007F0318 /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/emqx/CocoaMQTT.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF6EF1872E451325007F0318 /* CocoaMQTT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF6EF1862E451325007F0318 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
+			productName = CocoaMQTT;
+		};
+		BF6EF1892E451325007F0318 /* CocoaMQTTWebSocket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BF6EF1862E451325007F0318 /* XCRemoteSwiftPackageReference "CocoaMQTT" */;
+			productName = CocoaMQTTWebSocket;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF6EF13B2E44F114007F0318 /* Project object */;
 }
