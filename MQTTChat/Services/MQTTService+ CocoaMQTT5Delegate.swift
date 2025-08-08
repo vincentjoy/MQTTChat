@@ -17,10 +17,8 @@ extension MQTTService: CocoaMQTT5Delegate {
                 reconnectAttempts = 0
                 var details = "Reason: \(ack)"
                 if let data = connAckData {
-                    if let props = data.properties {
-                        details += "\nServer keep alive: \(props.serverKeepAlive ?? 0)"
-                        details += "\nMax packet size: \(props.maximumPacketSize ?? 0)"
-                    }
+                    details += "\nServer keep alive: \(data.serverKeepAlive ?? 0)"
+                    details += "\nMax packet size: \(data.maximumPacketSize ?? 0)"
                 }
                 logEvent(.connection, message: "Connected successfully (MQTT v5)", details: details)
                 await subscribe()
@@ -41,7 +39,7 @@ extension MQTTService: CocoaMQTT5Delegate {
         Task { @MainActor in
             var details = "ID: \(id)"
             if let data = pubAckData {
-                details += "\nReason: \(data.reasonCode)"
+                details += "\nReason: \(data.reasonCode ?? .unspecifiedError)"
             }
             logEvent(.publish, message: "Publish acknowledged (v5)", details: details)
         }
@@ -59,7 +57,7 @@ extension MQTTService: CocoaMQTT5Delegate {
                 handleReceivedMessage(topic: message.topic, payload: payload)
                 
                 // Log MQTT v5 specific properties
-                if let props = publishData?.properties {
+                if let props = publishData {
                     var details = "Topic: \(message.topic)"
                     if let userProps = props.userProperty {
                         details += "\nUser Properties: \(userProps)"
@@ -88,7 +86,7 @@ extension MQTTService: CocoaMQTT5Delegate {
         }
     }
     
-    nonisolated func mqtt5(_ mqtt5: CocoaMQTT5, didUnsubscribeTopics topics: [String], unsubAckData: MqttDecodeUnsubAck?) {
+    nonisolated func mqtt5(_ mqtt5: CocoaMQTT5, didUnsubscribeTopics topics: [String], UnsubAckData unsubAckData: MqttDecodeUnsubAck?) {
         Task { @MainActor in
             var details = "Topics: \(topics)"
             if let data = unsubAckData {

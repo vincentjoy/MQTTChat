@@ -8,6 +8,7 @@
 import Foundation
 import CocoaMQTT
 import Combine
+import CocoaMQTTWebSocket
 
 @MainActor
 final class MQTTService: ObservableObject {
@@ -16,10 +17,10 @@ final class MQTTService: ObservableObject {
     @Published private(set) var events: [MQTTEvent] = []
     @Published var configuration = MQTTConfiguration()
     
+    var reconnectAttempts = 0
     private var mqtt: CocoaMQTT?
     private var mqtt5: CocoaMQTT5?
     private var reconnectTask: Task<Void, Never>?
-    var reconnectAttempts = 0
     private let maxReconnectAttempts = 10
     private let cancellables = Set<AnyCancellable>()
     
@@ -90,26 +91,23 @@ final class MQTTService: ObservableObject {
         
         messages.append(message)
         
-        let mqttMessage: CocoaMQTTMessage
         if configuration.mqttVersion == .v5 {
             var msg = CocoaMQTT5Message(
                 topic: configuration.topic,
                 string: content,
                 qos: CocoaMQTTQoS(rawValue: configuration.qos.rawValue) ?? .qos1
-            )!
+            )
             msg.retained = retain
             
             // Add user properties for MQTT v5
+            var properties = MqttPublishProperties()
             if !configuration.userProperties.isEmpty {
-                var properties = MqttPublishProperties()
-                properties.userProperty = configuration.userProperties.map { [$0.key, $0.value] }
-                msg.properties = properties
+                properties.userProperty = configuration.userProperties
             }
             
-            mqtt5?.publish(msg)
-            mqttMessage = msg
+            mqtt5?.publish(msg, properties: properties)
         } else {
-            mqttMessage = CocoaMQTTMessage(
+            let mqttMessage = CocoaMQTTMessage(
                 topic: configuration.topic,
                 string: content,
                 qos: CocoaMQTTQoS(rawValue: configuration.qos.rawValue) ?? .qos1,
@@ -158,11 +156,20 @@ final class MQTTService: ObservableObject {
     private func connectMQTT311() async throws {
         let clientID = configuration.clientId.isEmpty ? UUID().uuidString : configuration.clientId
         
-        mqtt = CocoaMQTT(
-            clientID: clientID,
-            host: configuration.host,
-            port: configuration.port
-        )
+        if configuration.useWebSocket {
+            mqtt = CocoaMQTT(
+                clientID: clientID,
+                host: configuration.host,
+                port: configuration.port,
+                socket: CocoaMQTTWebSocket()
+            )
+        } else {
+            mqtt = CocoaMQTT(
+                clientID: clientID,
+                host: configuration.host,
+                port: configuration.port
+            )
+        }
         
         guard let mqtt = mqtt else { throw MQTTError.initializationFailed }
         
@@ -181,11 +188,20 @@ final class MQTTService: ObservableObject {
     private func connectMQTT5() async throws {
         let clientID = configuration.clientId.isEmpty ? UUID().uuidString : configuration.clientId
         
-        mqtt5 = CocoaMQTT5(
-            clientID: clientID,
-            host: configuration.host,
-            port: configuration.port
-        )
+        if configuration.useWebSocket {
+            mqtt5 = CocoaMQTT5(
+                clientID: clientID,
+                host: configuration.host,
+                port: configuration.port,
+                socket: CocoaMQTTWebSocket()
+            )
+        } else {
+            mqtt5 = CocoaMQTT5(
+                clientID: clientID,
+                host: configuration.host,
+                port: configuration.port
+            )
+        }
         
         guard let mqtt5 = mqtt5 else { throw MQTTError.initializationFailed }
         
@@ -202,7 +218,7 @@ final class MQTTService: ObservableObject {
         
         // Add user properties
         if !configuration.userProperties.isEmpty {
-            connectProperties.userProperty = configuration.userProperties.map { [$0.key, $0.value] }
+            connectProperties.userProperties = configuration.userProperties
         }
         
         mqtt5.connectProperties = connectProperties
@@ -222,15 +238,7 @@ final class MQTTService: ObservableObject {
         mqtt.autoReconnect = false // We'll handle reconnection manually
         
         // Configure transport
-        if configuration.useWebSocket {
-            mqtt.enableSSL = configuration.useTLS
-            mqtt.websocket = CocoaMQTTWebSocket()
-            if configuration.useTLS {
-                mqtt.websocket?.enableSSL = true
-            }
-        } else {
-            mqtt.enableSSL = configuration.useTLS
-        }
+        mqtt.enableSSL = configuration.useTLS
         
         // Allow self-signed certificates
         if configuration.allowSelfSignedCerts {
@@ -256,34 +264,21 @@ final class MQTTService: ObservableObject {
         mqtt5.autoReconnect = false // We'll handle reconnection manually
         
         // Configure transport
-        if configuration.useWebSocket {
-            mqtt5.enableSSL = configuration.useTLS
-            mqtt5.websocket = CocoaMQTTWebSocket()
-            if configuration.useTLS {
-                mqtt5.websocket?.enableSSL = true
-            }
-        } else {
-            mqtt5.enableSSL = configuration.useTLS
-        }
+        mqtt5.enableSSL = configuration.useTLS
         
         // Allow self-signed certificates
         if configuration.allowSelfSignedCerts {
             mqtt5.allowUntrustCACertificate = true
         }
         
-        // Configure Last Will and Testament for MQTT v5
         if configuration.enableLWT && !configuration.lwtTopic.isEmpty {
-            var willMessage = CocoaMQTT5Message(
+            let willMessage = CocoaMQTT5Message(
                 topic: configuration.lwtTopic,
                 string: configuration.lwtMessage,
                 qos: CocoaMQTTQoS(rawValue: configuration.lwtQoS.rawValue) ?? .qos1
-            )!
+            )
+            willMessage.willDelayInterval = 10
             willMessage.retained = configuration.lwtRetain
-            
-            // Add will properties for MQTT v5
-            var willProperties = MqttPublishProperties()
-            willProperties.willDelayInterval = 10
-            willMessage.properties = willProperties
             
             mqtt5.willMessage = willMessage
         }
