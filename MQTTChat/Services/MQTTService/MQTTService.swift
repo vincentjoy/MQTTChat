@@ -60,6 +60,21 @@ final class MQTTService: ObservableObject {
         }
     }
     
+    func disconnect() {
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        reconnectAttempts = 0
+        
+        if configuration.mqttVersion == .v5 {
+            mqtt5?.disconnect()
+        } else {
+            mqtt?.disconnect()
+        }
+        
+        connectionState = .disconnected
+        logEvent(.connection, message: "Disconnected from broker")
+    }
+    
     func publish(_ content: String, retain: Bool = false) async {
         guard connectionState == .connected else {
             logEvent(.error, message: "Cannot publish: Not connected")
