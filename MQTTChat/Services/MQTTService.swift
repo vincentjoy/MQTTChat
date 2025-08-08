@@ -33,7 +33,8 @@ final class MQTTService: ObservableObject {
     
     deinit {
         reconnectTask?.cancel()
-        disconnect()
+        mqtt5?.disconnect()
+        mqtt?.disconnect()
     }
     
     // MARK: - Public Methods
@@ -59,21 +60,6 @@ final class MQTTService: ObservableObject {
         }
     }
     
-    func disconnect() {
-        reconnectTask?.cancel()
-        reconnectTask = nil
-        reconnectAttempts = 0
-        
-        if configuration.mqttVersion == .v5 {
-            mqtt5?.disconnect()
-        } else {
-            mqtt?.disconnect()
-        }
-        
-        connectionState = .disconnected
-        logEvent(.connection, message: "Disconnected from broker")
-    }
-    
     func publish(_ content: String, retain: Bool = false) async {
         guard connectionState == .connected else {
             logEvent(.error, message: "Cannot publish: Not connected")
@@ -92,7 +78,7 @@ final class MQTTService: ObservableObject {
         messages.append(message)
         
         if configuration.mqttVersion == .v5 {
-            var msg = CocoaMQTT5Message(
+            let msg = CocoaMQTT5Message(
                 topic: configuration.topic,
                 string: content,
                 qos: CocoaMQTTQoS(rawValue: configuration.qos.rawValue) ?? .qos1
@@ -100,7 +86,7 @@ final class MQTTService: ObservableObject {
             msg.retained = retain
             
             // Add user properties for MQTT v5
-            var properties = MqttPublishProperties()
+            let properties = MqttPublishProperties()
             if !configuration.userProperties.isEmpty {
                 properties.userProperty = configuration.userProperties
             }
@@ -211,7 +197,7 @@ final class MQTTService: ObservableObject {
         mqtt5.delegate = self
         
         // Set connect properties for MQTT v5
-        var connectProperties = MqttConnectProperties()
+        let connectProperties = MqttConnectProperties()
         connectProperties.sessionExpiryInterval = 3600
         connectProperties.receiveMaximum = 100
         connectProperties.maximumPacketSize = 65535
