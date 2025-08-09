@@ -34,9 +34,22 @@
 		BF6EF15A2E44F116007F0318 /* MQTTChatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MQTTChatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BF6EF1E72E477740007F0318 /* Exceptions for "MQTTChat" folder in "MQTTChat" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BF6EF1422E44F114007F0318 /* MQTTChat */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BF6EF1452E44F114007F0318 /* MQTTChat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BF6EF1E72E477740007F0318 /* Exceptions for "MQTTChat" folder in "MQTTChat" target */,
+			);
 			path = MQTTChat;
 			sourceTree = "<group>";
 		};
@@ -410,6 +423,7 @@
 				DEVELOPMENT_TEAM = BMZMVWGL7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MQTTChat/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -438,6 +452,7 @@
 				DEVELOPMENT_TEAM = BMZMVWGL7D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MQTTChat/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
