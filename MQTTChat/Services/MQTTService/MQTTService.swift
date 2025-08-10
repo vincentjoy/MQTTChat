@@ -38,9 +38,7 @@ final class MQTTService: ObservableObject {
     // MARK: - Public Methods
     
     func connect() async {
-        await MainActor.run {
-            connectionState = .connecting
-        }
+        setConnectionState(to: .connecting)
         
         logEvent(.connection, message: "Initiating connection to \(configuration.host):\(configuration.port)")
         
@@ -51,10 +49,8 @@ final class MQTTService: ObservableObject {
                 try await connectMQTT311()
             }
         } catch {
-            await MainActor.run {
-                connectionState = .error
-                logEvent(.error, message: "Connection failed", details: error.localizedDescription)
-            }
+            setConnectionState(to: .error)
+            logEvent(.error, message: "Connection failed", details: error.localizedDescription)
         }
     }
     
@@ -69,7 +65,7 @@ final class MQTTService: ObservableObject {
             mqtt?.disconnect()
         }
         
-        connectionState = .disconnected
+        setConnectionState(to: .disconnected)
         logEvent(.connection, message: "Disconnected from broker")
     }
     
@@ -88,7 +84,9 @@ final class MQTTService: ObservableObject {
             isRetained: retain
         )
         
-        messages.append(message)
+        await MainActor.run {
+            messages.append(message)
+        }
         
         if configuration.mqttVersion == .v5 {
             let msg = CocoaMQTT5Message(
@@ -143,11 +141,15 @@ final class MQTTService: ObservableObject {
     }
     
     func clearMessages() {
-        messages.removeAll()
+        Task { @MainActor in
+            messages.removeAll()
+        }
     }
     
     func clearEvents() {
-        events.removeAll()
+        Task { @MainActor in
+            events.removeAll()
+        }
     }
     
     // MARK: - Private Methods
@@ -304,12 +306,12 @@ final class MQTTService: ObservableObject {
     
     private func attemptReconnection() async {
         guard reconnectAttempts < maxReconnectAttempts else {
-            connectionState = .error
+            setConnectionState(to: .error)
             logEvent(.error, message: "Max reconnection attempts reached")
             return
         }
         
-        connectionState = .reconnecting
+        setConnectionState(to: .reconnecting)
         reconnectAttempts += 1
         
         // Exponential backoff
@@ -322,12 +324,14 @@ final class MQTTService: ObservableObject {
     }
     
     func logEvent(_ type: MQTTEvent.EventType, message: String, details: String? = nil) {
-        let event = MQTTEvent(type: type, message: message, details: details)
-        events.insert(event, at: 0)
-        
-        // Keep only last 100 events
-        if events.count > 100 {
-            events = Array(events.prefix(100))
+        Task { @MainActor in
+            let event = MQTTEvent(type: type, message: message, details: details)
+            events.insert(event, at: 0)
+            
+            // Keep only last 100 events
+            if events.count > 100 {
+                events = Array(events.prefix(100))
+            }
         }
         
         // Can log using analytics SDKs later
@@ -343,8 +347,16 @@ final class MQTTService: ObservableObject {
             qos: configuration.qos.rawValue,
             isRetained: false
         )
-        
-        messages.append(message)
+        Task { @MainActor in
+            messages.append(message)
+        }
         logEvent(.receive, message: "Received from \(topic)", details: payload)
+    }
+    
+    func setConnectionState(to newState: ConnectionState) {
+        Task { @MainActor [weak self] in
+            // Eventhough this is a very short lived task, since this is getting called from disconnect() method, which resides in deinit() and this spun out an asynchronus task, there could be a chance of self being nil here
+            self?.connectionState = newState
+        }
     }
 }

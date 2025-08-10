@@ -12,14 +12,14 @@ import Combine
 extension MQTTService: CocoaMQTTDelegate {
     func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
         if ack == .accept {
-            connectionState = .connected
+            setConnectionState(to: .connected)
             reconnectAttempts = 0
             logEvent(.connection, message: "Connected successfully")
             Task {
                 await subscribe()
             }
         } else {
-            connectionState = .error
+            setConnectionState(to: .error)
             logEvent(.error, message: "Connection rejected", details: "ACK: \(ack)")
         }
     }
@@ -60,7 +60,7 @@ extension MQTTService: CocoaMQTTDelegate {
     }
     
     func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-        connectionState = .disconnected
+        setConnectionState(to: .disconnected)
         if let error = err {
             logEvent(.error, message: "Disconnected with error", details: error.localizedDescription)
             startReconnection()

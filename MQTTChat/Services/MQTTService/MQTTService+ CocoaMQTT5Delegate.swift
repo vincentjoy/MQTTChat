@@ -12,7 +12,7 @@ import Combine
 extension MQTTService: CocoaMQTT5Delegate {
     func mqtt5(_ mqtt5: CocoaMQTT5, didConnectAck ack: CocoaMQTTCONNACKReasonCode, connAckData: MqttDecodeConnAck?) {
         if ack == .success {
-            connectionState = .connected
+            setConnectionState(to: .connected)
             reconnectAttempts = 0
             var details = "Reason: \(ack)"
             if let data = connAckData {
@@ -24,7 +24,7 @@ extension MQTTService: CocoaMQTT5Delegate {
                 await subscribe()
             }
         } else {
-            connectionState = .error
+            setConnectionState(to: .error)
             logEvent(.error, message: "Connection rejected", details: "Reason: \(ack)")
         }
     }
@@ -95,7 +95,7 @@ extension MQTTService: CocoaMQTT5Delegate {
     }
     
     func mqtt5DidDisconnect(_ mqtt5: CocoaMQTT5, withError err: Error?) {
-        connectionState = .disconnected
+        setConnectionState(to: .disconnected)
         if let error = err {
             logEvent(.error, message: "Disconnected with error", details: error.localizedDescription)
             startReconnection()
