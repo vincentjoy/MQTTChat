@@ -9,7 +9,6 @@ import Foundation
 import Network
 import Combine
 
-@MainActor
 final class NetworkMonitor: ObservableObject {
     @Published private(set) var isConnected = CurrentValueSubject<Bool, Never>(true)
     @Published private(set) var connectionType: ConnectionType = .unknown

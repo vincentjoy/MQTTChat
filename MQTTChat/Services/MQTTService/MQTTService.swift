@@ -10,7 +10,6 @@ import CocoaMQTT
 import Combine
 import CocoaMQTTWebSocket
 
-@MainActor
 final class MQTTService: ObservableObject {
     @Published var connectionState: ConnectionState = .disconnected
     @Published private(set) var messages: [Message] = []
@@ -33,8 +32,7 @@ final class MQTTService: ObservableObject {
     
     deinit {
         reconnectTask?.cancel()
-        mqtt5?.disconnect()
-        mqtt?.disconnect()
+        disconnect()
     }
     
     // MARK: - Public Methods
@@ -331,6 +329,9 @@ final class MQTTService: ObservableObject {
         if events.count > 100 {
             events = Array(events.prefix(100))
         }
+        
+        // Can log using analytics SDKs later
+        // Since this is a demo app, that implementation is omitted (for now)
     }
     
     func handleReceivedMessage(topic: String, payload: String) {
