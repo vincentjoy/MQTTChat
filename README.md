@@ -141,6 +141,35 @@ Clean Session: On
 - **QoS 1:** At least once (acknowledged)
 - **QoS 2:** Exactly once (4-way handshake)
 
+## Project Structure
+
+```
+MQTTChat/
+├── App/
+│   ├── MQTTChatApp.swift
+│   └── Info.plist
+├── Models/
+│   ├── Message.swift
+│   ├── MQTTConfiguration.swift
+│   └── ConnectionState.swift
+├── Views/
+│   ├── ContentView.swift
+│   ├── ChatView.swift
+│   ├── SettingsView.swift
+│   └── Components/
+│       ├── MessageBubble.swift
+│       ├── ConnectionStatusView.swift
+│       └── MessageInputView.swift
+├── ViewModels/
+│   ├── ChatViewModel.swift
+│   └── SettingsViewModel.swift
+├── Services/
+│   ├── MQTTService.swift
+│   └── NetworkMonitor.swift
+└── Resources/
+    └── Assets.xcassets
+```
+
 ## Troubleshooting
 
 ### Connection Issues
@@ -168,9 +197,63 @@ Clean Session: On
 - Sanitize message content
 - Consider message encryption for sensitive data
 
+## Contributing
+
+Pull requests are welcome! Please ensure:
+- Code follows Swift 6 concurrency guidelines
+- All tests pass
+- Documentation is updated
+- SwiftLint warnings are addressed
+
 ## License
 
 MIT License - See LICENSE file for details
+
+## Local Demo Environment
+
+This project includes a complete local MQTT demo environment that runs on your MacBook. This allows you to test all MQTT features without needing an internet connection or external broker.
+
+### Quick Local Setup
+
+1. **Navigate to demo directory:**
+```bash
+cd mqtt-demo-server/
+chmod +x setup_mqtt_demo.sh
+./setup_mqtt_demo.sh
+```
+
+2. **Start the demo:**
+```bash
+./start_mqtt_demo.sh
+```
+
+3. **Configure iPhone app with the displayed settings**
+
+The demo includes:
+- Local Mosquitto MQTT broker
+- IoT device simulator (temperature, motion, lights, doors, energy)
+- Auto-responding chat bot
+- Real-time sensor data generation
+
+For detailed instructions, see [LOCAL_DEMO_SETUP.md](LOCAL_DEMO_SETUP.md).
+
+## Testing Scenarios
+
+### Unit Testing
+- Test MQTT service with mock broker
+- Validate message handling
+- Verify reconnection logic
+
+### Integration Testing
+1. Use local demo environment
+2. Test with public brokers
+3. Validate all QoS levels
+4. Test network interruptions
+
+### Performance Testing
+- Handle 1000+ messages per second
+- Multiple simultaneous connections
+- Large payload handling (up to 256KB)
 
 ## Support
 
@@ -178,3 +261,4 @@ For issues or questions:
 - GitHub Issues: [Report a bug](https://github.com/yourusername/MQTTChat/issues)
 - Documentation: [MQTT Protocol](https://mqtt.org/)
 - CocoaMQTT: [Library Documentation](https://github.com/emqx/CocoaMQTT)
+- Local Demo Issues: See [LOCAL_DEMO_SETUP.md](LOCAL_DEMO_SETUP.md#troubleshooting)
